@@ -16,4 +16,4 @@ cientifica a nivel escolar
 
 ### Creditos
 
-![video](/image/miniatura_del_video_del_que_me_guie.jpg)
+[![video](/image/miniatura_del_video_del_que_me_guie.jpg)](https://www.youtube.com/watch?v=42WydmfcVSc)
