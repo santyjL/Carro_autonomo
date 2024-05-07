@@ -6,10 +6,12 @@
 
 NewPing Dist(A0, A1, 300); //(trig,echo,dist max)
 NewPing Dist2(A2 , A3 , 50); //(trig , echo , dist max)
+NewPing Dist3(A4 , A5 , 50); //(trig , echo , dist max)
 Servo myServo;
 
 // definicion de las variables de distancia
-int distanciaVacio = 0;
+int distanciaVacio1 = 0;
+int distanciaVacio2 = 0;
 int distancia = 0;
 int distanciaD = 0;
 int distanciaIz = 0;
@@ -17,10 +19,9 @@ boolean Booleano = false;
 
 //Definicion de los motores
 AF_DCMotor Motor1(1, MOTOR12_1KHZ);
-AF_DCMotor Motor2(2, MOTOR12_1KHZ);
-AF_DCMotor Motor3(3, MOTOR34_1KHZ);
 AF_DCMotor Motor4(4, MOTOR34_1KHZ);
 
+//inicializacion
 void setup() {
   Serial.begin(9600);
   myServo.attach(10);
@@ -35,15 +36,15 @@ void setup() {
 
 void loop() {
 distancia = medirDistancia();
-distanciaVacio = medirDistanciaVacio();
-Serial.println(distanciaVacio);
+distanciaVacio1 = medirDistanciaVacio(Dist2);
 
-if (distancia >= 25 && distancia <= 300 && distanciaVacio <= 5)
+
+if (distancia >= 25 && distancia <= 300 && distanciaVacio1 <= 5)
   {
     Adelante();
   }
 
-else if (distancia <= 25 || distanciaVacio >= 6)
+else if (distancia <= 25 || distanciaVacio1 >= 6)
   {
     Frenar();
     delay(200);
@@ -91,10 +92,10 @@ int mirarIzquierda()
       return distancia;
   }
 
-int medirDistanciaVacio()
+int medirDistanciaVacio(NewPing sensor)
 {
   delay(50);
-  int distanciaVacio = Dist2.ping_cm();
+  int distanciaVacio = sensor.ping_cm();
   if (distanciaVacio <= 0 || distanciaVacio >= 50)
   {
     distanciaVacio = 50;
@@ -113,11 +114,9 @@ int medirDistancia()
     return ditanciaCM;
   }
 
-void Frenar() 
+void Frenar()
  {
     Motor1.run(RELEASE);
-    Motor2.run(RELEASE);
-    Motor3.run(RELEASE);
     Motor4.run(RELEASE);
  }
 
@@ -125,46 +124,59 @@ void Adelante() {
  if(Booleano == false)
   {
     Booleano = true;
+    controlVelocidad(200);
     Motor1.run(BACKWARD);
-    Motor2.run(BACKWARD);
-    Motor3.run(BACKWARD);
     Motor4.run(BACKWARD);
-    controlVelocidad(150);
   }
 }
 
+
+// Retrocede durante un tiempo máximo o hasta que se detecte un obstáculo detrás
 void Reversa() {
-    Booleano = false;
+  Booleano = false;
+
+  unsigned long tiempoInicio = millis();
+  while (millis() - tiempoInicio < 1000) {
+    // Medir la distancia detrás del carro
+    int distanciaDetras = medirDistanciaVacio(Dist3);
+
+    // Si se detecta un obstáculo detrás, detener el retroceso
+    if (distanciaDetras >= 6) {
+      Frenar();
+      return;
+    }
+
+    // Retroceder a máxima velocidad
+    controlVelocidad(200);
     Motor1.run(FORWARD);
-    Motor2.run(FORWARD);
-    Motor3.run(FORWARD);
     Motor4.run(FORWARD);
-    controlVelocidad(220);
+
+
     delay(200);
+  }
+
+  Frenar();
 }
 
 void GirarDerecha() {
+  controlVelocidad(254);
   Motor1.run(BACKWARD);
-  Motor2.run(BACKWARD);
-  Motor3.run(RELEASE);
   Motor4.run(RELEASE);
-  delay(500);
+  delay(1000);
 }
 
 void GirarIzquierda() {
+  controlVelocidad(254);
   Motor1.run(RELEASE);
-  Motor2.run(RELEASE);
-  Motor3.run(BACKWARD);
   Motor4.run(BACKWARD);
-  delay(500);
+  delay(1000);
 }
 
+//controla las velocidades de cada parte por ejemplo los giros o el retroceso
 void controlVelocidad(int velocidad_max){
   for (int velocidad = 0; velocidad < velocidad_max; velocidad +=2)
    {
       Motor1.setSpeed(velocidad);
-      Motor2.setSpeed(velocidad);
-      Motor3.setSpeed(velocidad);
       Motor4.setSpeed(velocidad);
       delay(3);
    }
