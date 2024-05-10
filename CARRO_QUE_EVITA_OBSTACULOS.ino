@@ -19,7 +19,10 @@ boolean Booleano = false;
 
 //Definicion de los motores
 AF_DCMotor Motor1(1, MOTOR12_1KHZ);
+AF_DCMotor Motor2(2, MOTOR12_1KHZ);
+AF_DCMotor Motor3(3, MOTOR34_1KHZ);
 AF_DCMotor Motor4(4, MOTOR34_1KHZ);
+
 
 //inicializacion
 void setup() {
@@ -38,13 +41,12 @@ void loop() {
 distancia = medirDistancia();
 distanciaVacio1 = medirDistanciaVacio(Dist2);
 
-
-if (distancia >= 25 && distancia <= 300 && distanciaVacio1 <= 5)
+if (distancia >= 35 && distancia <= 300 && distanciaVacio1 <= 5)
   {
     Adelante();
   }
 
-else if (distancia <= 25 || distanciaVacio1 >= 6)
+else if (distancia <= 35 || distanciaVacio1 >= 6)
   {
     Frenar();
     delay(200);
@@ -114,19 +116,24 @@ int medirDistancia()
     return ditanciaCM;
   }
 
-void Frenar()
+void Frenar() 
  {
     Motor1.run(RELEASE);
+    Motor2.run(RELEASE);
+    Motor3.run(RELEASE);
     Motor4.run(RELEASE);
  }
 
 void Adelante() {
  if(Booleano == false)
   {
+    controlVelocidad(130);
     Booleano = true;
-    controlVelocidad(200);
     Motor1.run(BACKWARD);
+    Motor2.run(BACKWARD);
+    Motor3.run(FORWARD);
     Motor4.run(BACKWARD);
+    
   }
 }
 
@@ -136,7 +143,7 @@ void Reversa() {
   Booleano = false;
 
   unsigned long tiempoInicio = millis();
-  while (millis() - tiempoInicio < 1000) {
+  while (millis() - tiempoInicio < 800) {
     // Medir la distancia detrás del carro
     int distanciaDetras = medirDistanciaVacio(Dist3);
 
@@ -147,36 +154,43 @@ void Reversa() {
     }
 
     // Retroceder a máxima velocidad
-    controlVelocidad(200);
+    controlVelocidad(130);
     Motor1.run(FORWARD);
+    Motor2.run(FORWARD);
+    Motor3.run(BACKWARD);
     Motor4.run(FORWARD);
 
-
-    delay(200);
+    delay(60);
   }
 
   Frenar();
 }
 
 void GirarDerecha() {
-  controlVelocidad(254);
+  controlVelocidad(135);
   Motor1.run(BACKWARD);
+  Motor2.run(BACKWARD);
+  Motor3.run(RELEASE);
   Motor4.run(RELEASE);
-  delay(1000);
+  delay(500);
 }
 
 void GirarIzquierda() {
-  controlVelocidad(254);
+  controlVelocidad(135);
   Motor1.run(RELEASE);
+  Motor2.run(RELEASE);
+  Motor3.run(FORWARD);
   Motor4.run(BACKWARD);
-  delay(1000);
+  delay(500);
 }
 
 //controla las velocidades de cada parte por ejemplo los giros o el retroceso
 void controlVelocidad(int velocidad_max){
-  for (int velocidad = 0; velocidad < velocidad_max; velocidad +=2)
+  for (int velocidad = 0; velocidad < velocidad_max; velocidad ++)
    {
       Motor1.setSpeed(velocidad);
+      Motor2.setSpeed(velocidad);
+      Motor3.setSpeed(velocidad);
       Motor4.setSpeed(velocidad);
       delay(3);
    }

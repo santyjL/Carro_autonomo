@@ -7,15 +7,11 @@ cientifica a nivel escolar
 
 # Carro Autonomo V2
 
-![Carro autonomo](/image/carro_autonomo_imagen_v2.jpg)
-
-A diferencia de la vercion V1 este trae Menos motores y mas sensores , se restan 2 motores y se
-añaden 2 sensores por terminos de optimizacion de bateria , los sensores se añadieron para evitar
+![Carro autonomo](/image/carro_autonomo_imagen__v2.png)
+![Carro autonomo](/image/superior.jpeg)
+A diferencia de la vercion V1 trae mas sensores , los sensores se añadieron para evitar
 caidas tanto por delante y para el momento de retrocedes , pero aun asi puede caer de lado entonces
-se puede decir el evita el 90% de las caidas aproximadamente , y por lo que ahora faltan 2 motores
-entonces es algo mas lento al momento del giro per funciona bien y aun haci logra girar.
-
-![Carro autonomo](/image/carro_autonomo_viendo_de_frente_imagen_v2.jpg)
+se puede decir el evita el 90% de las caidas aproximadamente .
 
 ## Componentes Electronicos
 
@@ -30,7 +26,7 @@ entonces es algo mas lento al momento del giro per funciona bien y aun haci logr
 
 **Para la vercion v2**
 
-- 2 motores DC
+- 4 motores DC
 - 4 Llantas
 - 1 Servo motor SG90
 - 3 Sensores ultrasonico HC-SR04
