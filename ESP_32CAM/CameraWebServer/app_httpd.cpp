@@ -278,6 +278,31 @@ void enable_led(bool en) {  // Turn LED On or Off
 }
 #endif
 
+esp_err_t command_handler(httpd_req_t *req) {
+    // Tamaño máximo del buffer para los datos recibidos
+    char content[100];
+    
+    // Leer los datos del cuerpo de la solicitud
+    int ret = httpd_req_recv(req, content, req->content_len);
+    if (ret <= 0) {
+        if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
+            httpd_resp_send_408(req);
+        }
+        return ESP_FAIL;
+    }
+
+    // Asegurarse de que los datos sean una cadena válida
+    content[ret] = '\0';
+    
+    // Generar una respuesta con los datos recibidos
+    char response[150];
+    snprintf(response, sizeof(response), "http://1.0.0.23/?comando=%s", content);
+
+    // Enviar la respuesta
+    httpd_resp_send(req, response, HTTPD_RESP_USE_STRLEN);
+    return ESP_OK;
+}
+
 static esp_err_t bmp_handler(httpd_req_t *req) {
   camera_fb_t *fb = NULL;
   esp_err_t res = ESP_OK;
@@ -1279,6 +1304,7 @@ void startCameraServer() {
     .method = HTTP_GET,
     .handler = win_handler,
     .user_ctx = NULL
+    
 #ifdef CONFIG_HTTPD_WS_SUPPORT
     ,
     .is_websocket = true,
@@ -1286,6 +1312,18 @@ void startCameraServer() {
     .supported_subprotocol = NULL
 #endif
   };
+    httpd_uri_t command_uri = {
+        .uri = "/command",
+        .method = HTTP_POST,
+        .handler = command_handler,
+        .user_ctx = NULL
+#ifdef CONFIG_HTTPD_WS_SUPPORT
+        ,
+        .is_websocket = false,
+        .handle_ws_control_frames = false,
+        .supported_subprotocol = NULL
+#endif
+    };
 
   ra_filter_init(&ra_filter, 20);
 
@@ -1295,27 +1333,27 @@ void startCameraServer() {
   // load ids from flash partition
   recognizer.set_ids_from_flash();
 #endif
-  log_i("Starting web server on port: '%d'", config.server_port);
-  if (httpd_start(&camera_httpd, &config) == ESP_OK) {
-    httpd_register_uri_handler(camera_httpd, &index_uri);
-    httpd_register_uri_handler(camera_httpd, &cmd_uri);
-    httpd_register_uri_handler(camera_httpd, &status_uri);
-    httpd_register_uri_handler(camera_httpd, &capture_uri);
-    httpd_register_uri_handler(camera_httpd, &bmp_uri);
+    log_i("Starting web server on port: '%d'", config.server_port);
+    if (httpd_start(&camera_httpd, &config) == ESP_OK) {
+        httpd_register_uri_handler(camera_httpd, &index_uri);
+        httpd_register_uri_handler(camera_httpd, &cmd_uri);
+        httpd_register_uri_handler(camera_httpd, &status_uri);
+        httpd_register_uri_handler(camera_httpd, &capture_uri);
+        httpd_register_uri_handler(camera_httpd, &bmp_uri);
+        httpd_register_uri_handler(camera_httpd, &xclk_uri);
+        httpd_register_uri_handler(camera_httpd, &reg_uri);
+        httpd_register_uri_handler(camera_httpd, &greg_uri);
+        httpd_register_uri_handler(camera_httpd, &pll_uri);
+        httpd_register_uri_handler(camera_httpd, &win_uri);
+        httpd_register_uri_handler(camera_httpd, &command_uri); // Registrar el manejador de comandos
+    }
 
-    httpd_register_uri_handler(camera_httpd, &xclk_uri);
-    httpd_register_uri_handler(camera_httpd, &reg_uri);
-    httpd_register_uri_handler(camera_httpd, &greg_uri);
-    httpd_register_uri_handler(camera_httpd, &pll_uri);
-    httpd_register_uri_handler(camera_httpd, &win_uri);
-  }
-
-  config.server_port += 1;
-  config.ctrl_port += 1;
-  log_i("Starting stream server on port: '%d'", config.server_port);
-  if (httpd_start(&stream_httpd, &config) == ESP_OK) {
-    httpd_register_uri_handler(stream_httpd, &stream_uri);
-  }
+    config.server_port += 1;
+    config.ctrl_port += 1;
+    log_i("Starting stream server on port: '%d'", config.server_port);
+    if (httpd_start(&stream_httpd, &config) == ESP_OK) {
+        httpd_register_uri_handler(stream_httpd, &stream_uri);
+    }
 }
 
 void setupLedFlash(int pin) {
